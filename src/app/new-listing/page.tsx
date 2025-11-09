@@ -1,18 +1,14 @@
 'use server';
-import {createCompany} from "@/app/actions/workosActions";
-import {faArrowRight} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {getUser} from "@workos-inc/authkit-nextjs";
-import {WorkOS} from "@workos-inc/node";
+import { createCompany } from "@/app/actions/workosActions";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getUser } from "@workos-inc/authkit-nextjs";
+import { WorkOS } from "@workos-inc/node";
 import Link from "next/link";
 
 export default async function NewListingPage() {
-
   const workos = new WorkOS(process.env.WORKOS_API_KEY);
-
-  const {user} = await getUser();
-
-
+  const { user } = await getUser();
 
   if (!user) {
     return (
@@ -26,28 +22,37 @@ export default async function NewListingPage() {
     userId: user.id,
   });
 
-  const activeOrganizationMemberships = organizationMemberships.data.filter(om => om.status === 'active');
-  const organizationsNames:{[key: string]: string} = {};
+  const activeOrganizationMemberships = organizationMemberships.data.filter(
+    (om) => om.status === "active"
+  );
+
+  const organizationsNames: { [key: string]: string } = {};
   for (const activeMembership of activeOrganizationMemberships) {
-    const organization = await workos.organizations.getOrganization(activeMembership.organizationId);
+    const organization = await workos.organizations.getOrganization(
+      activeMembership.organizationId
+    );
     organizationsNames[organization.id] = organization.name;
   }
-
 
   return (
     <div className="container">
       <div>
         <h2 className="text-lg mt-6">Your companies</h2>
-        <p className="text-gray-500 text-sm mb-2">Select a company to create a job add for</p>
+        <p className="text-gray-500 text-sm mb-2">
+          Select a company to create a job ad for
+        </p>
+
         <div>
           <div className="border inline-block rounded-md">
-            {Object.keys(organizationsNames).map(orgId => (
+            {Object.keys(organizationsNames).map((orgId, index) => (
               <Link
-                href={'/new-listing/' + orgId}
+                key={orgId || index} // ✅ Added key here
+                href={"/new-listing/" + orgId}
                 className={
-                  "py-2 px-4 flex gap-2 items-center "
-                  + (Object.keys(organizationsNames)[0] === orgId ? '' : 'border-t')
-                }>
+                  "py-2 px-4 flex gap-2 items-center " +
+                  (Object.keys(organizationsNames)[0] === orgId ? "" : "border-t")
+                }
+              >
                 {organizationsNames[orgId]}
                 <FontAwesomeIcon className="h-4" icon={faArrowRight} />
               </Link>
@@ -63,7 +68,8 @@ export default async function NewListingPage() {
 
         <Link
           className="inline-flex gap-2 items-center bg-gray-200 px-4 py-2 rounded-md mt-6"
-          href={'/new-company'}>
+          href={"/new-company"}
+        >
           Create a new company
           <FontAwesomeIcon className="h-4" icon={faArrowRight} />
         </Link>
